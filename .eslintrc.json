@@ -1,5 +1,6 @@
 {
   "extends": "@rocketseat/eslint-config/react",
+  "ignorePatterns": ["**/**/lib/webgazer.js"],
   "rules": {
     "no-use-before-define": "off"
   }

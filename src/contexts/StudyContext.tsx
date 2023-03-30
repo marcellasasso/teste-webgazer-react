@@ -51,13 +51,29 @@ export function StudyProvider({ children }: StudyProviderProps) {
   }
 
   function startStudy() {
+    setGazeData([])
     setStartTimestamp(Date.now())
     setStudyStarted(true)
+    console.log('iniciou')
   }
 
-  function stopWebgazer() {
-    webgazer.pause()
-  }
+  const stopWebgazer = React.useCallback(() => {
+    if (studyStarted) {
+      setStudyStarted(false)
+      webgazer.pause()
+      console.log('acabou')
+
+      console.log(
+        gazeData.map((data) => {
+          const currentTimeInMilliseconds = data.timestamp - startTimestamp
+          return {
+            ...data,
+            currentTime: currentTimeInMilliseconds / 1000,
+          }
+        }),
+      )
+    }
+  }, [gazeData, webgazer, studyStarted, startTimestamp])
 
   function startWebgazer() {
     webgazer
@@ -95,8 +111,15 @@ export function StudyProvider({ children }: StudyProviderProps) {
   }, [])
 
   React.useEffect(() => {
-    console.log(gazeData)
-  }, [gazeData])
+    if (studyStarted && gazeData.length) {
+      const lastGazeDataIndex = gazeData.length - 1
+      const lastGazeDataTimestamp = gazeData[lastGazeDataIndex].timestamp
+      if (lastGazeDataTimestamp - startTimestamp >= milliseconds) {
+        stopWebgazer()
+      }
+      console.log(gazeData)
+    }
+  }, [studyStarted, gazeData, startTimestamp, milliseconds, stopWebgazer])
 
   return (
     <StudyContext.Provider
